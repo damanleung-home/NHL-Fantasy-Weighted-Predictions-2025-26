@@ -79,6 +79,7 @@ def calculate_zscore_ranking(df, stat_weights_config, position, scarcity_enabled
     return df.sort_values(by='Final_Ranking_Score', ascending=False)
 
 # --- Streamlit UI ---
+
 st.title("Fantasy Hockey Prediction Tool")
 st.markdown("---")
 
@@ -133,6 +134,13 @@ if skater_df_raw is not None and goalie_df_raw is not None:
         with col2:
             st.button("Reset", key=f"reset_skater_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
 
+    for category in skater_weights_config['analyst_weights'].keys():
+        for analyst in skater_weights_config['analyst_weights'][category].keys():
+            skater_weights_config['analyst_weights'][category][analyst] = skater_analyst_weights_ui[(category, analyst)]
+            
+    for stat in skater_weights_config['stat_weights'].keys():
+        skater_weights_config['stat_weights'][stat] = skater_stat_weights_ui[stat]
+
     st.markdown("---")
 
     st.header("Customize Goalie Rankings")
@@ -161,9 +169,16 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             key = f"goalie_stat_{stat}"
             if key not in st.session_state:
                 st.session_state[key] = float(weight)
-            goalie_stat_weights_ui[stat] = st.slider(f"{stat} Weight", 0.0, 5.0, float(weight), key=key)
+            goalie_stat_weights_ui[stat] = st.slider(f"{stat} Weight", 0.0, 5.0, st.session_state[key], key=key)
         with col2:
             st.button("Reset", key=f"reset_goalie_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
+    
+    for category in goalie_weights_config['analyst_weights'].keys():
+        for analyst in goalie_weights_config['analyst_weights'][category].keys():
+            goalie_weights_config['analyst_weights'][category][analyst] = goalie_analyst_weights_ui[(category, analyst)]
+
+    for stat in goalie_weights_config['stat_weights'].keys():
+        goalie_weights_config['stat_weights'][stat] = goalie_stat_weights_ui[stat]
     
     st.markdown("---")
     
@@ -177,3 +192,8 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             
             goalie_predictions = calculate_weighted_prediction(goalie_df, goalie_weights_config, 'goalie')
             goalie_ranked = calculate_zscore_ranking(goalie_predictions, goalie_weights_config['stat_weights'], 'goalie', scarcity_enabled)
+            
+            final_ranking = pd.concat([skater_ranked, goalie_ranked], ignore_index=True)
+            final_ranking = final_ranking.sort_values(by='Final_Ranking_Score', ascending=False)
+            
+            st.dataframe(final_ranking)
