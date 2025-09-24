@@ -35,7 +35,7 @@ def calculate_weighted_prediction(df, weights_config, position):
     """
     Calculates the final weighted prediction for each stat based on analyst weights.
     """
-    categories = ['GP', 'G', 'A', '+/-', 'PIM', 'PPP', 'SHP', 'SOG', 'FOW', 'HIT', 'BLK'] if position == 'skater' else ['GP', 'W', 'GAA', 'SV', 'SV%', 'SO']
+    categories = ['GP', 'G', 'A', '+/-', 'PIM', 'PPP', 'SHP', 'SOG', 'FOW', 'HIT', 'BLK'] if position == 'skater' else ['GP', 'W', 'L', 'GAA', 'SV', 'SV%', 'SO']
     analysts = list(weights_config['analyst_weights'][categories[0]].keys())
     
     all_predictions = pd.DataFrame()
@@ -60,7 +60,7 @@ def calculate_zscore_ranking(df, stat_weights_config, position, scarcity_enabled
     
     df['Final_Ranking_Score'] = 0.0
     for category in categories:
-        is_negative_stat = (position == 'goalie' and category in ['GAA'])
+        is_negative_stat = (position == 'goalie' and category in ['L', 'GAA'])
         
         predicted_col = f'Weighted_Predicted_{category}'
         if is_negative_stat:
@@ -108,7 +108,6 @@ if skater_df_raw is not None and goalie_df_raw is not None:
         
         old_sum_others = sum(current_weights[analyst] for analyst in other_analysts)
         
-        # If the old sum is not 0, redistribute proportionally
         if old_sum_others > 0:
             remaining_pool = 100 - new_value
             for analyst in other_analysts:
@@ -130,6 +129,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
         st.session_state['goalie_analyst_weights'] = {cat: {a: w * 100 for a, w in goalie_weights_config['analyst_weights'][cat].items()} for cat in goalie_weights_config['analyst_weights'].keys()}
 
     st.header("Customize Skater Rankings")
+    
     skater_df = skater_df_raw[skater_df_raw['season'] == '2025-2026'].copy()
     
     with st.expander("Analyst Weights (Percentage-Based)"):
@@ -156,21 +156,34 @@ if skater_df_raw is not None and goalie_df_raw is not None:
     st.markdown("---")
 
     st.header("Customize Goalie Rankings")
-    goalie_df = goalie_df_raw[goalie_df_raw['season'] == '2025-2026'].copy()
     
-    with st.expander("Analyst Weights (Percentage-Based)"):
-        goalie_analyst_weights_ui = st.session_state.goalie_analyst_weights
-        for category in goalie_analyst_weights_ui.keys():
-            st.write(f"**{category}**")
-            cols = st.columns(len(analyst_names))
-            for i, (analyst, weight) in enumerate(goalie_analyst_weights_ui[category].items()):
-                with cols[i]:
-                    st.slider(f"{analyst_names.get(analyst, analyst)}", 0.0, 100.0, weight, key=f"goalie_analyst_{category}_{analyst}", on_change=update_analyst_weights_percent, args=(category, analyst, st.session_state[f"goalie_analyst_{category}_{analyst}"]))
+    goalie_df = goalie_df_raw[goalie_df_raw['season'] == '2025-2026'].copy()
+
+    st.subheader("Analyst Weights")
+    goalie_analyst_weights_ui = {}
+    for category in goalie_weights_config['analyst_weights'].keys():
+        st.write(f"**{category}**")
+        for analyst, weight in goalie_analyst_weights_ui[category].items():
+            col1, col2 = st.columns(len(analyst_names))
+            with col1:
+                key = f"goalie_analyst_{category}_{analyst}"
+                if key not in st.session_state:
+                    st.session_state[key] = float(weight)
+                goalie_analyst_weights_ui[(category, analyst)] = st.slider(f"{analyst_names.get(analyst, analyst)} Weight", 0.0, 100.0, weight, key=key)
+            with col2:
+                st.button("Reset", key=f"reset_goalie_analyst_{category}_{analyst}", on_click=reset_weights, args=(key, float(weight)))
 
     st.subheader("Stat Weights")
     goalie_stat_weights_ui = {}
     for stat, weight in goalie_weights_config['stat_weights'].items():
-        goalie_stat_weights_ui[stat] = st.slider(f"{stat} Weight", 0.0, 5.0, float(weight), key=f"goalie_stat_{stat}")
+        col1, col2 = st.columns([0.8, 0.2])
+        with col1:
+            key = f"goalie_stat_{stat}"
+            if key not in st.session_state:
+                st.session_state[key] = float(weight)
+            goalie_stat_weights_ui[stat] = st.slider(f"{stat} Weight", 0.0, 5.0, st.session_state[key], key=key)
+        with col2:
+            st.button("Reset", key=f"reset_goalie_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
     
     for category in goalie_weights_config['analyst_weights'].keys():
         for analyst in goalie_weights_config['analyst_weights'][category].keys():
@@ -180,6 +193,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
         goalie_weights_config['stat_weights'][stat] = goalie_stat_weights_ui[stat]
     
     st.markdown("---")
+    
     st.header("Final Ranking Options")
     scarcity_enabled = st.checkbox("Enable Position Scarcity", value=False)
     
