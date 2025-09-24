@@ -107,7 +107,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
     for category in skater_weights_config['analyst_weights'].keys():
         st.write(f"**{category}**")
         for analyst, weight in skater_weights_config['analyst_weights'][category].items():
-            skater_analyst_weights_ui[(category, analyst)] = st.slider(f"{analyst} Weight", 0.0, 5.0, float(weight), key=f"skater_analyst_{category}_{analyst}")
+            skater_analyst_weights_ui[(category, analyst)] = st.slider(f"{analyst_names.get(analyst, analyst)} Weight", 0.0, 5.0, float(weight), key=f"skater_analyst_{category}_{analyst}")
 
     st.subheader("Stat Weights")
     skater_stat_weights_ui = {}
@@ -132,7 +132,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
     for category in goalie_weights_config['analyst_weights'].keys():
         st.write(f"**{category}**")
         for analyst, weight in goalie_weights_config['analyst_weights'][category].items():
-            goalie_analyst_weights_ui[(category, analyst)] = st.slider(f"{analyst} Weight", 0.0, 5.0, float(weight), key=f"goalie_analyst_{category}_{analyst}")
+            goalie_analyst_weights_ui[(category, analyst)] = st.slider(f"{analyst_names.get(analyst, analyst)} Weight", 0.0, 5.0, float(weight), key=f"goalie_analyst_{category}_{analyst}")
 
     st.subheader("Stat Weights")
     goalie_stat_weights_ui = {}
@@ -164,3 +164,4 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             
 
             st.dataframe(final_ranking)
+
