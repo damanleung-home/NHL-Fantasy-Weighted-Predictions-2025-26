@@ -92,6 +92,12 @@ predictions_directory = '.'
 skater_df_raw, goalie_df_raw, skater_weights_config, goalie_weights_config = load_data_and_weights(predictions_directory)
 
 if skater_df_raw is not None and goalie_df_raw is not None:
+    analyst_names = {
+        "AnG": "Apples & Ginos", "DFO": "Dailyfaceoff", "DtZ": "DatsyukToZetterberg",
+        "LX": "LineupExperts", "Cull": "Scott Cullen", "SL": "Steve Laidlaw",
+        "YF": "Yahoo Fantrax", "KUB": "Kubota", "BFH": "Bangers Fantasy Hockey",
+        "i1": "Dom Luszczyszyn"
+    }
     st.header("Customize Skater Rankings")
     
     skater_df = skater_df_raw[skater_df_raw['season'] == '2025-2026'].copy()
@@ -156,4 +162,5 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             final_ranking = pd.concat([skater_ranked, goalie_ranked], ignore_index=True)
             final_ranking = final_ranking.sort_values(by='Final_Ranking_Score', ascending=False)
             
+
             st.dataframe(final_ranking)
