@@ -103,78 +103,91 @@ if skater_df_raw is not None and goalie_df_raw is not None:
     # Callback function to reset weights
     def reset_weights(key, default_value):
         st.session_state[key] = default_value
+    with st.container(border=True):
+        st.header("Customize Skater Rankings")
+        
+        skater_df = skater_df_raw[skater_df_raw['season'] == '2025-2026'].copy()
+        
+        #with st.expander("Analyst Weights"):
+        with st.container(border=True):
+            st.subheader("Analyst Weights")
+            for category in skater_weights_config['analyst_weights'].keys():
+                with st.expander(f"**{category}**"):
+                #st.write(f"**{category}**")
+                    for analyst, weight in skater_weights_config['analyst_weights'][category].items():
+                        col1, col2 = st.columns([0.8, 0.2])
+                        with col1:
+                            key = f"skater_analyst_{category}_{analyst}"
+                            if key not in st.session_state:
+                                st.session_state[key] = float(weight)
+                            st.slider(f"**{analyst_names.get(analyst, analyst)} Weight**", 0.0, 100.0, st.session_state[key], key=key)
+                        with col2:
+                            st.button("Reset", key=f"reset_skater_analyst_{category}_{analyst}", on_click=reset_weights, args=(key, float(weight)))
 
-    st.header("Customize Skater Rankings")
-    
-    skater_df = skater_df_raw[skater_df_raw['season'] == '2025-2026'].copy()
-    
-    with st.expander("Analyst Weights"):
-        for category in skater_weights_config['analyst_weights'].keys():
-            st.write(f"**{category}**")
-            for analyst, weight in skater_weights_config['analyst_weights'][category].items():
-                col1, col2 = st.columns([0.8, 0.2])
-                with col1:
-                    key = f"skater_analyst_{category}_{analyst}"
-                    if key not in st.session_state:
-                        st.session_state[key] = float(weight)
-                    st.slider(f"{analyst_names.get(analyst, analyst)} Weight", 0.0, 5.0, st.session_state[key], key=key)
-                with col2:
-                    st.button("Reset", key=f"reset_skater_analyst_{category}_{analyst}", on_click=reset_weights, args=(key, float(weight)))
+        #st.subheader("Stat Weights")
+        st.markdown("---")
+        with st.container(border=True):
+            st.subheader("Stat Weights")
+            with st.expander("Stat Weights"):
+                for stat, weight in skater_weights_config['stat_weights'].items():
+                    col1, col2 = st.columns([0.8, 0.2])
+                    with col1:
+                        key = f"skater_stat_{stat}"
+                        if key not in st.session_state:
+                            st.session_state[key] = float(weight)
+                        st.slider(f"**{stat} Weight**", 0.0, 2.0, st.session_state[key], key=key)
+                    with col2:
+                        st.button("Reset", key=f"reset_skater_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
 
-    st.subheader("Stat Weights")
-    for stat, weight in skater_weights_config['stat_weights'].items():
-        col1, col2 = st.columns([0.8, 0.2])
-        with col1:
-            key = f"skater_stat_{stat}"
-            if key not in st.session_state:
-                st.session_state[key] = float(weight)
-            st.slider(f"{stat} Weight", 0.0, 5.0, st.session_state[key], key=key)
-        with col2:
-            st.button("Reset", key=f"reset_skater_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
-
-    for category in skater_weights_config['analyst_weights'].keys():
-        for analyst in skater_weights_config['analyst_weights'][category].keys():
-            skater_weights_config['analyst_weights'][category][analyst] = st.session_state[f"skater_analyst_{category}_{analyst}"]
-            
-    for stat in skater_weights_config['stat_weights'].keys():
-        skater_weights_config['stat_weights'][stat] = st.session_state[f"skater_stat_{stat}"]
+                for category in skater_weights_config['analyst_weights'].keys():
+                    for analyst in skater_weights_config['analyst_weights'][category].keys():
+                        skater_weights_config['analyst_weights'][category][analyst] = st.session_state[f"skater_analyst_{category}_{analyst}"]
+                        
+                for stat in skater_weights_config['stat_weights'].keys():
+                    skater_weights_config['stat_weights'][stat] = st.session_state[f"skater_stat_{stat}"]
 
     st.markdown("---")
+    with st.container(border=True):
+        st.header("Customize Goalie Rankings")
+        
+        goalie_df = goalie_df_raw[goalie_df_raw['season'] == '2025-2026'].copy()
 
-    st.header("Customize Goalie Rankings")
-    
-    goalie_df = goalie_df_raw[goalie_df_raw['season'] == '2025-2026'].copy()
+        with st.container(border=True):
+            st.subheader("Analyst Weights")
+            for category in goalie_weights_config['analyst_weights'].keys():
+                #st.write(f"**{category}**")
+                with st.expander(f"**{category}**"):                
+                    for analyst, weight in goalie_weights_config['analyst_weights'][category].items():
+                        col1, col2 = st.columns([0.8, 0.2])
+                        with col1:
+                            key = f"goalie_analyst_{category}_{analyst}"
+                            if key not in st.session_state:
+                                st.session_state[key] = float(weight)
+                            st.slider(f"**{analyst_names.get(analyst, analyst)} Weight**", 0.0, 100.0, st.session_state[key], key=key)
+                        with col2:
+                            st.button("Reset", key=f"reset_goalie_analyst_{category}_{analyst}", on_click=reset_weights, args=(key, float(weight)))
 
-    with st.expander("Analyst Weights"):
-        for category in goalie_weights_config['analyst_weights'].keys():
-            st.write(f"**{category}**")
-            for analyst, weight in goalie_weights_config['analyst_weights'][category].items():
-                col1, col2 = st.columns([0.8, 0.2])
-                with col1:
-                    key = f"goalie_analyst_{category}_{analyst}"
-                    if key not in st.session_state:
-                        st.session_state[key] = float(weight)
-                    st.slider(f"{analyst_names.get(analyst, analyst)} Weight", 0.0, 5.0, st.session_state[key], key=key)
-                with col2:
-                    st.button("Reset", key=f"reset_goalie_analyst_{category}_{analyst}", on_click=reset_weights, args=(key, float(weight)))
+        #st.subheader("Stat Weights")
+        st.markdown("---")
+        with st.container(border=True):
+            st.subheader("Stat Weights")
+            with st.expander("Stat Weights"):
+                for stat, weight in goalie_weights_config['stat_weights'].items():
+                    col1, col2 = st.columns([0.8, 0.2])
+                    with col1:
+                        key = f"goalie_stat_{stat}"
+                        if key not in st.session_state:
+                            st.session_state[key] = float(weight)
+                        st.slider(f"**{stat} Weight**", 0.0, 2.0, st.session_state[key], key=key)
+                    with col2:
+                        st.button("Reset", key=f"reset_goalie_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
+                
+                for category in goalie_weights_config['analyst_weights'].keys():
+                    for analyst in goalie_weights_config['analyst_weights'][category].keys():
+                        goalie_weights_config['analyst_weights'][category][analyst] = st.session_state[f"goalie_analyst_{category}_{analyst}"]
 
-    st.subheader("Stat Weights")
-    for stat, weight in goalie_weights_config['stat_weights'].items():
-        col1, col2 = st.columns([0.8, 0.2])
-        with col1:
-            key = f"goalie_stat_{stat}"
-            if key not in st.session_state:
-                st.session_state[key] = float(weight)
-            st.slider(f"{stat} Weight", 0.0, 5.0, st.session_state[key], key=key)
-        with col2:
-            st.button("Reset", key=f"reset_goalie_stat_{stat}", on_click=reset_weights, args=(key, float(weight)))
-    
-    for category in goalie_weights_config['analyst_weights'].keys():
-        for analyst in goalie_weights_config['analyst_weights'][category].keys():
-            goalie_weights_config['analyst_weights'][category][analyst] = st.session_state[f"goalie_analyst_{category}_{analyst}"]
-
-    for stat in goalie_weights_config['stat_weights'].keys():
-        goalie_weights_config['stat_weights'][stat] = st.session_state[f"goalie_stat_{stat}"]
+                for stat in goalie_weights_config['stat_weights'].keys():
+                    goalie_weights_config['stat_weights'][stat] = st.session_state[f"goalie_stat_{stat}"]
     
     st.markdown("---")
     
