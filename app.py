@@ -212,11 +212,11 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             
             # 2. Skater Prediction and Ranking
             skater_predictions = calculate_weighted_prediction(skater_df, skater_weights_config, 'skater')
-            skater_ranked = calculate_zscore_ranking(skater_predictions, skater_weights_config['stat_weights'], 'skater', scarcity_enabled)
+            skater_ranked = calculate_zscore_ranking(skater_predictions, skater_weights_config['stat_weights'], 'skater')
             
             # 3. Goalie Prediction and Ranking
             goalie_predictions = calculate_weighted_prediction(goalie_df, goalie_weights_config, 'goalie')
-            goalie_ranked = calculate_zscore_ranking(goalie_predictions, goalie_weights_config['stat_weights'], 'goalie', scarcity_enabled)
+            goalie_ranked = calculate_zscore_ranking(goalie_predictions, goalie_weights_config['stat_weights'], 'goalie')
             
             # 4. Combine and Filter
             final_ranking = pd.concat([skater_ranked, goalie_ranked], ignore_index=True)
@@ -234,6 +234,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             final_ranking = final_ranking.sort_values(by='Final_Ranking_Score', ascending=False)
             
             st.dataframe(final_ranking)
+
 
 
 
