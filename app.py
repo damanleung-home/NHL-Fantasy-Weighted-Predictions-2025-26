@@ -200,7 +200,7 @@ if skater_df_raw is not None and goalie_df_raw is not None:
         height=100
     )
     
-    scarcity_enabled = false #st.checkbox("Enable Position Scarcity", value=False)
+    scarcity_enabled=false #st.checkbox("Enable Position Scarcity", value=False)
     
     if st.button("Generate Final Ranking List"):
         with st.spinner("Generating rankings..."):
@@ -234,4 +234,5 @@ if skater_df_raw is not None and goalie_df_raw is not None:
             final_ranking = final_ranking.sort_values(by='Final_Ranking_Score', ascending=False)
             
             st.dataframe(final_ranking)
+
 
